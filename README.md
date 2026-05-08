@@ -19,6 +19,7 @@ The app lets users explore energy systems through simple, visual interactions:
 - simulate energy-water-transport dependencies
 - export/import scenarios
 - view placeholder adapter outputs for future PyPSA/oemof integration
+- switch interface language for cross-cultural cooperation and shared understanding
 
 ---
 
@@ -93,6 +94,17 @@ Implemented as simplified systems-dependency simulations:
 - geopolitical dependency map
 - resilience/cascade simulation
 
+### Language & Cooperation Layer
+
+Implemented:
+
+- sidebar language selector
+- English and Hungarian core UI localization
+- lightweight German, Portuguese, and Spanish interface support
+- language-accessibility tab explaining translation as coordination infrastructure
+
+This supports the idea that shared understanding is part of systems design, especially when technical and non-technical actors must coordinate across cultures, institutions, and roles.
+
 ---
 
 ## Run Locally
@@ -118,6 +130,7 @@ This app focuses on:
 - coordination pressure
 - resilience communication
 - decision-support visualization
+- cross-cultural coordination and language accessibility
 
 ---
 

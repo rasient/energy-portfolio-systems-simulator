@@ -13,6 +13,7 @@ from src.visualization import (
 )
 from src.utils import scenario_to_json, load_scenario_json
 from src.adapters import create_pypsa_export_preview, create_oemof_export_preview, simulated_external_results
+from src.i18n import LANGUAGES, translate
 
 st.set_page_config(page_title="Energy Portfolio Systems Simulator", page_icon="⚡", layout="wide")
 
@@ -25,8 +26,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.title("⚡ Energy Portfolio Systems Simulator")
-st.caption("Full-roadmap prototype: visual MVP + dynamic behavior + scenarios + actors + adapter layer + Systems Lab infrastructure expansion.")
+with st.sidebar:
+    selected_language = st.selectbox("Language / Nyelv", list(LANGUAGES.keys()), index=0, help="Choose the interface language.")
+lang = LANGUAGES[selected_language]
+t = lambda key: translate(key, lang)
+
+st.title(t("app_title"))
+st.caption(t("app_caption"))
 
 GENERATION_DEFAULTS = {"Solar":22,"Wind":20,"Nuclear":24,"Gas":18,"Hydro":10,"Geothermal":4,"Biomass":2}
 STORAGE_DEFAULTS = {"Battery":35,"Pumped hydro":25,"Hydrogen":15}
@@ -35,13 +41,13 @@ if "scenario" not in st.session_state:
     st.session_state.scenario = PRESETS["Balanced transition"].copy()
 
 with st.sidebar:
-    st.header("Scenario")
-    preset = st.selectbox("Load preset", list(PRESETS.keys()))
-    if st.button("Apply preset"):
+    st.header(t("scenario"))
+    preset = st.selectbox(t("load_preset"), list(PRESETS.keys()))
+    if st.button(t("apply_preset")):
         st.session_state.scenario = PRESETS[preset].copy()
         st.rerun()
 
-    uploaded = st.file_uploader("Import scenario JSON", type=["json"])
+    uploaded = st.file_uploader(t("import_scenario"), type=["json"])
     if uploaded:
         imported = load_scenario_json(uploaded.read().decode("utf-8"))
         st.session_state.scenario = {
@@ -56,35 +62,35 @@ with st.sidebar:
             "industrial_demand": imported.get("industrial_demand", 35),
             "geopolitical_tension": imported.get("geopolitical_tension", 35),
         }
-        st.success("Scenario imported.")
+        st.success(t("scenario_imported"))
         st.rerun()
 
     st.divider()
-    st.header("Controls")
+    st.header(t("controls"))
 
     scenario = st.session_state.scenario
-    priority = st.selectbox("Optimization priority", list(PRIORITIES.keys()), index=list(PRIORITIES.keys()).index(scenario.get("priority","Highest resilience")))
-    stress_test = st.selectbox("Stress test", list(STRESS_TESTS.keys()), index=list(STRESS_TESTS.keys()).index(scenario.get("stress_test","Normal conditions")))
-    demand_growth = st.slider("Demand growth", 0, 60, int(scenario.get("demand_growth",15)), 1)
-    dependency_sensitivity = st.slider("Dependency sensitivity", 20, 100, int(scenario.get("dependency_sensitivity",55)), 1)
+    priority = st.selectbox(t("optimization_priority"), list(PRIORITIES.keys()), index=list(PRIORITIES.keys()).index(scenario.get("priority","Highest resilience")))
+    stress_test = st.selectbox(t("stress_test"), list(STRESS_TESTS.keys()), index=list(STRESS_TESTS.keys()).index(scenario.get("stress_test","Normal conditions")))
+    demand_growth = st.slider(t("demand_growth"), 0, 60, int(scenario.get("demand_growth",15)), 1)
+    dependency_sensitivity = st.slider(t("dependency_sensitivity"), 20, 100, int(scenario.get("dependency_sensitivity",55)), 1)
 
-    with st.expander("Generation mix", expanded=False):
+    with st.expander(t("generation_mix"), expanded=False):
         generation_mix = {}
         for tech, default in scenario.get("generation_mix", GENERATION_DEFAULTS).items():
             generation_mix[tech] = st.slider(tech, 0, 100, int(default), 1)
 
-    with st.expander("Storage capacities", expanded=False):
+    with st.expander(t("storage_capacities"), expanded=False):
         storage_mix = {}
         for tech, default in scenario.get("storage_mix", STORAGE_DEFAULTS).items():
             storage_mix[tech] = st.slider(tech, 0, 100, int(default), 1)
 
-    with st.expander("Systems Lab expansion assumptions", expanded=False):
-        water_stress = st.slider("Water stress", 0, 100, int(scenario.get("water_stress",30)), 1)
-        transport_electrification = st.slider("Transport electrification pressure", 0, 100, int(scenario.get("transport_electrification",25)), 1)
-        industrial_demand = st.slider("Industrial demand coupling", 0, 100, int(scenario.get("industrial_demand",35)), 1)
-        geopolitical_tension = st.slider("Geopolitical tension", 0, 100, int(scenario.get("geopolitical_tension",35)), 1)
+    with st.expander(t("systems_lab_expansion"), expanded=False):
+        water_stress = st.slider(t("water_stress"), 0, 100, int(scenario.get("water_stress",30)), 1)
+        transport_electrification = st.slider(t("transport_electrification"), 0, 100, int(scenario.get("transport_electrification",25)), 1)
+        industrial_demand = st.slider(t("industrial_demand"), 0, 100, int(scenario.get("industrial_demand",35)), 1)
+        geopolitical_tension = st.slider(t("geopolitical_tension"), 0, 100, int(scenario.get("geopolitical_tension",35)), 1)
 
-timeline_step = st.slider("Playback timeline step", 0, 100, 22, 1)
+timeline_step = st.slider(t("playback"), 0, 100, 22, 1)
 
 config = SimulationInput(
     priority=priority,
@@ -102,58 +108,59 @@ config = SimulationInput(
 results = evaluate_system(config)
 payload = scenario_payload(config, results)
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-    "Phase 1: Visual MVP",
-    "Phase 2: Dynamic Behavior",
-    "Phase 3: Scenarios",
-    "Phase 4: Actors",
-    "Phase 5: Integration",
-    "Phase 6: Systems Lab",
-    "Education Mode",
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+    t("tab1"),
+    t("tab2"),
+    t("tab3"),
+    t("tab4"),
+    t("tab5"),
+    t("tab6"),
+    t("tab7"),
+    t("tab8"),
 ])
 
 with tab1:
     left, center, right = st.columns([1.0,2.15,1.0], gap="large")
     with left:
-        st.subheader("Portfolio")
-        st.write(f"**Priority:** {priority}")
-        st.write(f"**Stress test:** {stress_test}")
-        st.metric("Renewable share", f"{results['renewable_share']}%")
-        st.metric("Baseload share", f"{results['baseload_share']}%")
-        st.metric("Gas share", f"{results['gas_share']}%")
+        st.subheader(t("portfolio"))
+        st.write(f"**{t('priority')}:** {priority}")
+        st.write(f"**{t('stress_test')}:** {stress_test}")
+        st.metric(t("renewable_share"), f"{results['renewable_share']}%")
+        st.metric(t("baseload_share"), f"{results['baseload_share']}%")
+        st.metric(t("gas_share"), f"{results['gas_share']}%")
     with center:
         st.plotly_chart(create_network_figure(generation_mix, storage_mix, results, timeline_step), use_container_width=True)
-        st.info("Warmer/larger nodes indicate pressure. Pulses become denser and less smooth as bottlenecks increase.")
+        st.info(t("network_info"))
     with right:
-        st.subheader("Outputs")
-        st.metric("System score", results["headline_score"])
-        st.metric("Resilience", results["resilience"])
-        st.metric("Reserve margin", results["reserve_margin"])
+        st.subheader(t("outputs"))
+        st.metric(t("system_score"), results["headline_score"])
+        st.metric(t("resilience"), results["resilience"])
+        st.metric(t("reserve_margin"), results["reserve_margin"])
         st.plotly_chart(create_tradeoff_radar(results), use_container_width=True)
     st.plotly_chart(create_pressure_bars(results), use_container_width=True)
 
 with tab2:
-    st.subheader("Phase 2 — Better Visual Behavior")
+    st.subheader(t("phase2_title"))
     df_time = simulate_timeline(config, 60)
     st.plotly_chart(create_timeline_figure(df_time), use_container_width=True)
 
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown("### Storage charge/discharge proxy")
+        st.markdown("### " + t("storage_proxy"))
         storage_df = df_time[["step","storage_flexibility","storage_pressure","reserve_margin"]].copy()
         storage_df["charge_proxy"] = (storage_df["storage_flexibility"] - storage_df["storage_pressure"]*0.35).clip(0,100)
         fig = px.area(storage_df, x="step", y=["charge_proxy","storage_pressure"], title="Storage Buffer vs Storage Pressure")
         st.plotly_chart(fig, use_container_width=True)
     with c2:
-        st.markdown("### Congestion buildup proxy")
+        st.markdown("### " + t("congestion_proxy"))
         congestion = df_time[["step","transmission_pressure","coordination_drift","bottleneck_pressure"]]
         fig = px.line(congestion, x="step", y=["transmission_pressure","coordination_drift","bottleneck_pressure"], title="Pulse Drift / Congestion Buildup")
         st.plotly_chart(fig, use_container_width=True)
 
 with tab3:
-    st.subheader("Phase 3 — Scenario System")
+    st.subheader(t("phase3_title"))
     scenario_json = scenario_to_json(payload)
-    st.download_button("Download current scenario JSON", scenario_json, file_name="energy_scenario.json", mime="application/json")
+    st.download_button(t("download_json"), scenario_json, file_name="energy_scenario.json", mime="application/json")
 
     rows = []
     for name, preset_data in PRESETS.items():
@@ -177,85 +184,83 @@ with tab3:
     st.dataframe(compare_df, use_container_width=True)
 
 with tab4:
-    st.subheader("Phase 4 — Actor Perspectives")
+    st.subheader(t("phase4_title"))
     actor_df = actor_scores(results)
     st.plotly_chart(create_actor_figure(actor_df), use_container_width=True)
     st.dataframe(actor_df, use_container_width=True)
 
-    st.markdown("""
-    Different actors interpret the same system differently:
-
-    - government balances emissions, resilience, cost, and dependency
-    - grid operators prioritize reliability and resilience
-    - industry prioritizes cost and reliable supply
-    - citizens prioritize affordability and continuity
-    - investors prioritize risk-adjusted opportunity and dependency exposure
-    """)
+    st.markdown(t("actor_text"))
 
 with tab5:
-    st.subheader("Phase 5 — External Model Integration Layer")
-    st.warning("This is adapter-ready placeholder logic, not real PyPSA/oemof execution yet.")
+    st.subheader(t("phase5_title"))
+    st.warning(t("adapter_warning"))
 
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown("### PyPSA export preview")
+        st.markdown("### " + t("pypsa_preview"))
         st.json(create_pypsa_export_preview(payload))
     with c2:
-        st.markdown("### oemof export preview")
+        st.markdown("### " + t("oemof_preview"))
         st.json(create_oemof_export_preview(payload))
 
-    st.markdown("### Simulated external model result comparison")
+    st.markdown("### " + t("external_compare"))
     external_df = simulated_external_results(payload)
     st.dataframe(external_df, use_container_width=True)
     st.plotly_chart(px.bar(external_df, x="Model", y=["Cost","Emissions","Resilience"], barmode="group", title="Internal vs External Placeholder Outputs"), use_container_width=True)
 
 with tab6:
-    st.subheader("Phase 6 — Systems Lab Expansion")
+    st.subheader(t("phase6_title"))
     st.plotly_chart(create_dependency_figure(results), use_container_width=True)
 
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Water dependency", results["water_dependency"])
-    c2.metric("Transport pressure", results["transport_pressure"])
-    c3.metric("Industrial pressure", results["industrial_pressure"])
-    c4.metric("Geopolitical exposure", results["geopolitical_exposure"])
+    c1.metric(t("water_dependency"), results["water_dependency"])
+    c2.metric(t("transport_pressure"), results["transport_pressure"])
+    c3.metric(t("industrial_pressure"), results["industrial_pressure"])
+    c4.metric(t("geopolitical_exposure"), results["geopolitical_exposure"])
 
-    st.markdown("### Simplified cascade reading")
+    st.markdown("### " + t("cascade_reading"))
     if results["cascade_risk"] < 35:
-        st.success("Cascade risk is low. Infrastructure coupling remains manageable.")
+        st.success(t("cascade_low"))
     elif results["cascade_risk"] < 65:
-        st.warning("Cascade risk is moderate. Stress can propagate across energy, water, transport, or industrial demand.")
+        st.warning(t("cascade_medium"))
     else:
-        st.error("Cascade risk is high. Multiple infrastructure dependencies are under simultaneous pressure.")
+        st.error(t("cascade_high"))
 
 with tab7:
-    st.subheader("Education Mode")
+    st.subheader(t("education_title"))
     st.markdown(f"""
-    ### What the current scenario teaches
+    ### {t('what_teaches')}
 
-    **Priority:** {priority}  
-    **Stress test:** {stress_test}
+    **{t('priority')}:** {priority}  
+    **{t('stress_test')}:** {stress_test}
 
-    This scenario shows how an energy portfolio behaves when generation, storage, demand, and external dependencies interact.
+    {t('scenario_shows')}
 
-    Key readings:
+    {t('key_readings')}
 
-    - **Resilience:** {results['resilience']} / 100
+    - **{t('resilience')}:** {results['resilience']} / 100
     - **Bottleneck pressure:** {results['bottleneck_pressure']} / 100
     - **Coordination drift:** {results['coordination_drift']} / 100
     - **Cascade risk:** {results['cascade_risk']} / 100
 
-    ### Interpretation
+    ### {t('interpretation')}
 
-    A system can still function while becoming less resilient.
+    {t('stable_sentence')}
 
-    This prototype helps users see the transition from:
+    {t('transition_sentence')}
 
-    **stable → stressed → fragile → unstable**
+    **{t('transition')}**
 
-    The purpose is not exact grid prediction.
+    {t('purpose1')}
 
-    The purpose is visual systems understanding.
+    {t('purpose2')}
     """)
 
+with tab8:
+    st.subheader(t("language_title"))
+    st.markdown(t("language_body"))
+    st.markdown(t("cooperation_points"))
+    st.info("Translation is treated here as a systems feature: it helps different people coordinate around the same model.")
+
 st.divider()
-st.caption("Prototype model only. This app is for visual systems understanding, not scientific grid prediction.")
+st.caption(t("footer"))
